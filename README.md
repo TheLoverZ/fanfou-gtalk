@@ -4,6 +4,8 @@
 
 ##使用说明：
 
+###直接看 [这里](http://thelover-z.tumblr.com/post/34635969225/1-58-gt)
+
 1. clone 代码
 2. 修改 ``app.yaml`` 第一行 ``application: app-name`` ，在 ``settings.py`` 填写你的 Consumer key/secret ，或者如果你觉得【1：58】这个名字还不错的话就不用修改
 3. 获取你的 access token/secret ，添加 GT 机器人：app-name@appspot.com
