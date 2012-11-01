@@ -4,6 +4,7 @@ import urllib
 from google.appengine.api import xmpp
 from google.appengine.ext import db
 from google.appengine.api import users
+import base64
 
 import fanfou
 import settings
@@ -108,16 +109,11 @@ def refresh_home_timeline(gid): #done 格式调整
         message_count = get_max_message_count()
         message_id = item['id']
         if not status_exists(message_id): #判重
-            #memcache_add(NUMBER_TO_ID_PREFIX + `message_count`, message_id)
             memcache_add('%s%s'%(NUMBER_TO_ID_PREFIX, `message_count`), message_id)
-            #conversation = item['user']['screen_name'] + ": " + item['text']
             conversation = '%s: %s'%(item['user']['screen_name'], item['text'])
-            #memcache_add(SCREEN_NAME_PREFIX + `message_count`, item['user']['screen_name'])
             memcache_add('%s%s'%(SCREEN_NAME_PREFIX, `message_count`), item['user']['screen_name'])
-            #memcache_add(CONTENT_PREFIX + `message_count`, conversation)
             memcache_add('%s%s'%(CONTENT_PREFIX, `message_count`), conversation)
             inc_max_message_count()
-            #xmpp.send_message(gid, conversation + ' #%s'%(message_count))
             xmpp.send_message(gid, '%s #%s'%(conversation, message_count))
 
 def update_last_home_tl(gid, updated_status_id): #更新上一条最新的 home timeline 
@@ -136,16 +132,11 @@ def auto_refresh_home_timeline(gid, last_id): #待合并
         message_count = get_max_message_count()
         message_id = item['id']
         if not status_exists(message_id): #判重
-            #memcache_add(NUMBER_TO_ID_PREFIX + `message_count`, message_id)
             memcache_add('%s%s'%(NUMBER_TO_ID_PREFIX, `message_count`), message_id)
-            #conversation = item['user']['screen_name'] + ": " + item['text']
             conversation = '%s: %s'%(item['user']['screen_name'], item['text'])
-            #memcache_add(SCREEN_NAME_PREFIX + `message_count`, item['user']['screen_name'])
             memcache_add('%s%s'%(SCREEN_NAME_PREFIX, `message_count`), item['user']['screen_name'])
-            #memcache_add(CONTENT_PREFIX + `message_count`, conversation)
             memcache_add('%s%s'%(CONTENT_PREFIX, `message_count`), conversation)
             inc_max_message_count()
-            #xmpp.send_message(gid, conversation + ' #%s'%(message_count))
             xmpp.send_message(gid, '%s #%s'%(conversation, message_count))
 #######home timeline
 ##replies
@@ -158,14 +149,10 @@ def show_new_replies(gid):
         message_count = get_max_message_count()
         message_id = item['id']
         if not status_exists(message_id):
-            #memcache_add(NUMBER_TO_ID_PREFIX + `message_count`, message_id)
             memcache_add('%s%s'%(NUMBER_TO_ID_PREFIX, `message_count`), message_id)
-            #conversation = item['user']['screen_name'] + ": " + item['text']
             conversation = '%s: %s'%(item['user']['screen_name'], item['text'])
-            #memcache_add(SCREEN_NAME_PREFIX + `message_count`, item['user']['screen_name'])
             memcache_add('%s%s'%(SCREEN_NAME_PREFIX, `message_count`), item['user']['screen_name'])
             inc_max_message_count()
-            #xmpp.send_message(gid, conversation + ' #%s'%(message_count))
             xmpp.send_message(gid, '%s #%s'%(conversation, message_count))
 
 def update_last_reply(gid, updated_status_id):
@@ -185,17 +172,12 @@ def auto_refresh_reply(gid, last_id):
         message_count = get_max_message_count()
         message_id = item['id']
         if not status_exists(message_id):
-            #memcache_add(NUMBER_TO_ID_PREFIX + `message_count`, message_id)
             memcache_add('%s%s'%(NUMBER_TO_ID_PREFIX, `message_count`), message_id)
-            #conversation = item['user']['screen_name'] + ": " + item['text']
             conversation = '%s: %s'%(item['user']['screen_name'], item['text'])
-            #memcache_add(CONTENT_PREFIX + `message_count`, conversation)
             memcache_add('%s%s'%(CONTENT_PREFIX, `message_count`), conversation)
-            #memcache_add(SCREEN_NAME_PREFIX + `message_count`, item['user']['screen_name'])
             memcache_add('%s%s'%(SCREEN_NAME_PREFIX, `message_count`), item['user']['screen_name'])
             inc_max_message_count()
             update_last_reply(gid, item['id']) #更新最新的 id
-            #xmpp.send_message(gid, conversation + ' #%s'%(message_count))
             xmpp.send_message(gid, '%s #%s'%(conversation, message_count))
 
 def reply_statuses(gid, mes):
@@ -227,17 +209,12 @@ def show_new_mentions(gid, since_id):
             message_count = get_max_message_count()
             message_id = item['id']
             if not status_exists(message_id):
-                #memcache_add(NUMBER_TO_ID_PREFIX + `message_count`, message_id)
                 memcache_add('%s%s'%(NUMBER_TO_ID_PREFIX, `message_count`), message_id)
-                #conversation = item['user']['screen_name'] + ": " + item['text']
                 conversation = '%s: %s'%(item['user']['screen_name'], item['text'])
-                #memcache_add(CONTENT_PREFIX + `message_count`, conversation)
                 memcache_add('%s%s'%(CONTENT_PREFIX, `message_count`), conversation)
-                #memcache_add(SCREEN_NAME_PREFIX + `message_count`, item['user']['screen_name'])
                 memcache_add('%s%s'%(SCREEN_NAME_PREFIX, `message_count`), item['user']['screen_name'])
                 inc_max_message_count()
                 update_last_mention(gid, item['id'])
-                #xmpp.send_message(gid, conversation + ' #%s'%(message_count))
                 xmpp.send_message(gid, '%s #%s'%(conversation, message_count))
     else: #自动获取新 mentions
         since_id = db.GqlQuery("SELECT * FROM users WHERE gid='%s'"%(gid))[0].last_mentions
@@ -247,17 +224,12 @@ def show_new_mentions(gid, since_id):
             message_count = get_max_message_count()
             message_id = item['id']
             if not status_exists(message_id):
-                #memcache_add(NUMBER_TO_ID_PREFIX + `message_count`, message_id)
                 memcache_add('%s%s'%(NUMBER_TO_ID_PREFIX, `message_count`), message_id)
-                #conversation = item['user']['screen_name'] + ": " + item['text']
                 conversation = '%s: %s'%(item['user']['screen_name'], item['text'])
-                #memcache_add(CONTENT_PREFIX + `message_count`, conversation)
                 memcache_add('%s%s'%(CONTENT_PREFIX, `message_count`), conversation)
-                #memcache_add(SCREEN_NAME_PREFIX + `message_count`, item['user']['screen_name'])
                 memcache_add('%s%s'%(SCREEN_NAME_PREFIX, `message_count`), item['user']['screen_name'])
                 inc_max_message_count()
                 update_last_mention(gid, item['id'])
-                #xmpp.send_message(gid, conversation + ' #%s'%(message_count))
                 xmpp.send_message(gid, '%s #%s'%(conversation, message_count))
 #######mentions
 ##dm
@@ -316,7 +288,6 @@ def bind_user(gid, mes):
     else:
         e = users(
             gid = gid,                              
-            #name, pwd = mes.split(' ')[1:], #报错
             name = mes.split(' ')[1],
             pwd = mes.split(' ')[2],
             last_home_tl = '',                      #最新一条获取的 home tl
@@ -422,7 +393,7 @@ def params_handler(mes, gid):
     elif mes[:4] == '-fav':
         xmpp.send_message(gid, TODO_ERROR_MESSAGE)
     elif mes == '-x':
-        xmpp.send_message(gid, x)
+        xmpp.send_message(gid, base64.b64decode(x))
     else:
         update_statuses(gid, mes)
 
@@ -447,7 +418,4 @@ manual_message = u"""
     -rt num xxx             转发 id 为 num 的消息，xxx 为转发附加的内容（可没有附加内容）
 """
 
-x = """I'm the one who wants to be with you,
-deep inside I hope you feel it too,
-waited on a line of greens and blues,
-just to be the next to be with you."""
+x = "SSdtIHRoZSBvbmUgd2hvIHdhbnRzIHRvIGJlIHdpdGggeW91LApkZWVwIGluc2lkZSBJIGhvcGUgeW91IGZlZWwgaXQgdG9vLAp3YWl0ZWQgb24gYSBsaW5lIG9mIGdyZWVucyBhbmQgYmx1ZXMsCmp1c3QgdG8gYmUgdGhlIG5leHQgdG8gYmUgd2l0aCB5b3Uu"
